@@ -36,7 +36,7 @@ while continua and number_of_generation <= max_generation:
     i = 0
     while i < len(vehicles_list):
         v1 = vehicles_list[i]
-        v1.update()
+        v1.update(vehicles_list)
         to_draw_vehicle_polygon(v1, window)
         i += 1
 

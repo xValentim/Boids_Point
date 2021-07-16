@@ -4,12 +4,23 @@ import math
 import random
 from values import *
 
+def position_average(vehicles_list):
+        n = len(vehicles_list)
+        mid_point = pygame.Vector2()
+        for boid in vehicles_list:
+            mid_point += boid.position
+        mid_point /= n
+        return mid_point
+
+def create_vehicles(n):
+    return [Vehicle(random.randint(1, largura), random.randint(1, altura)) for i in range(n)]
+
 class Vehicle:
     def __init__(self, x=0 , y=0, dna=[], flag_predator=False):
         self.position = pygame.Vector2(x, y)
         self.velocity = pygame.Vector2(random.uniform(-2, 2), random.uniform(-2, 2))
         self.acceleration = pygame.Vector2()
-        self.radius_cohesion = 30
+        self.radius_cohesion = 50
         self.radius_alignment = 30
         self.radius_separation = 30
         self.r = 0.8
@@ -21,15 +32,41 @@ class Vehicle:
             return (vector.normalize()) * limit_value
         else:
             return vector
-
-    def cohesion():
-        pass
-
+    
+    def cohesion(self, vehicles_list):
+        boids = []
+        Radius_max_2 = self.radius_cohesion * self.radius_cohesion
+        for v in vehicles_list:
+            d_2 = (v.position - self.position).magnitude_squared()
+            if d_2 < Radius_max_2:
+                boids.append(v)
+        target = position_average(boids)
+        if target != self.position:
+            desire = (self.position - target).normalize() * self.maxspeed
+            steering = self.velocity - desire
+        else:
+            steering = pygame.Vector2()
+        self.applyForce(steering / 5)
+    
+    def separation(self, vehicles_list):
+        boids = []
+        Radius_max_2 = self.radius_separation * self.radius_separation
+        for v in vehicles_list:
+            d_2 = (v.position - self.position).magnitude_squared()
+            if d_2 < Radius_max_2:
+                boids.append(v)
+        target = position_average(boids)
+        
+        self.applyForce(steering / 5)
+    
+        
     # Update location
-    def update(self):
+    def update(self, vehicles_list):
     
         # Boundary condition (depende da aceleração)
         self.boundary()
+
+        self.cohesion(vehicles_list)
 
         # Update velocity
         self.velocity += self.acceleration
@@ -84,5 +121,3 @@ class Vehicle:
         steer = self.limit(self.maxforce, steer)
 
         return steer
-def create_vehicles(n):
-    return [Vehicle(random.randint(1, largura), random.randint(1, altura)) for i in range(n)]
