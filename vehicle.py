@@ -5,12 +5,20 @@ import random
 from values import *
 
 def position_average(vehicles_list):
-        n = len(vehicles_list)
-        mid_point = pygame.Vector2()
-        for boid in vehicles_list:
-            mid_point += boid.position
-        mid_point /= n
-        return mid_point
+    n = len(vehicles_list)
+    mid_point = pygame.Vector2()
+    for boid in vehicles_list:
+        mid_point += boid.position
+    mid_point /= n
+    return mid_point
+
+def velocity_average(vehicles_list):
+    n = len(vehicles_list)
+    mid_velocity = pygame.Vector2()
+    for boid in vehicles_list:
+        mid_velocity += boid.velocity
+    mid_velocity /= n
+    return mid_velocity
 
 def create_vehicles(n):
     return [Vehicle(random.randint(1, largura), random.randint(1, altura)) for i in range(n)]
@@ -33,6 +41,21 @@ class Vehicle:
         else:
             return vector
     
+    def alignment(self, vehicles_list):
+        boids = []
+        Radius_max_2 = self.radius_alignment * self.radius_alignment
+        for v in vehicles_list:
+            d_2 = (v.position - self.velocity).magnitude_squared()
+            if d_2 < Radius_max_2:
+                boids.append(v)
+        target = velocity_average(boids)
+        if target != self.position:
+            desire = (self.position - target).normalize() * self.maxspeed
+            steering = self.velocity - desire
+        else:
+            steering = pygame.Vector2()
+        self.applyForce(steering / 5)
+
     def cohesion(self, vehicles_list):
         boids = []
         Radius_max_2 = self.radius_cohesion * self.radius_cohesion
