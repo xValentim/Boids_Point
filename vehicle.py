@@ -56,8 +56,15 @@ class Vehicle:
             if d_2 < Radius_max_2:
                 boids.append(v)
         target = position_average(boids)
+        if target != self.position:
+            desire = (self.position - target).normalize() * self.maxspeed
+            steering = self.velocity - desire
+            D = (target - self.position).magnitude()
+        else:
+            steering = pygame.Vector2()
+            D = 1
         
-        self.applyForce(steering / 5)
+        self.applyForce(-steering / D)
     
         
     # Update location
@@ -67,6 +74,7 @@ class Vehicle:
         self.boundary()
 
         self.cohesion(vehicles_list)
+        self.separation(vehicles_list)
 
         # Update velocity
         self.velocity += self.acceleration
