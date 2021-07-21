@@ -30,10 +30,10 @@ class Vehicle:
         self.acceleration = pygame.Vector2()
         self.radius_cohesion = 50
         self.radius_alignment = 30
-        self.radius_separation = 30
+        self.radius_separation = 50
         self.r = 0.8
-        self.maxforce = 0.2
-        self.maxspeed = 4
+        self.maxforce = 0.3
+        self.maxspeed = 2
 
     def limit(self, limit_value, vector):
         if vector.magnitude_squared() > limit_value * limit_value:
@@ -45,15 +45,16 @@ class Vehicle:
         boids = []
         Radius_max_2 = self.radius_alignment * self.radius_alignment
         for v in vehicles_list:
-            d_2 = (v.position - self.velocity).magnitude_squared()
+            d_2 = (v.position - self.position).magnitude_squared()
             if d_2 < Radius_max_2:
                 boids.append(v)
         target = velocity_average(boids)
-        if target != self.position:
-            desire = (self.position - target).normalize() * self.maxspeed
-            steering = self.velocity - desire
+        '''if len(boids) > 0:
+            target = velocity_average(boids)
         else:
-            steering = pygame.Vector2()
+            target = self.velocity'''
+        target = target.normalize() * self.maxspeed
+        steering = target - self.velocity
         self.applyForce(steering / 5)
 
     def cohesion(self, vehicles_list):
@@ -69,7 +70,7 @@ class Vehicle:
             steering = self.velocity - desire
         else:
             steering = pygame.Vector2()
-        self.applyForce(steering / 5)
+        self.applyForce(steering / 2)
     
     def separation(self, vehicles_list):
         boids = []
@@ -87,7 +88,7 @@ class Vehicle:
             steering = pygame.Vector2()
             D = 1
         
-        self.applyForce(-steering / D)
+        self.applyForce(-steering * 8 / (D))
     
         
     # Update location
@@ -98,6 +99,7 @@ class Vehicle:
 
         self.cohesion(vehicles_list)
         self.separation(vehicles_list)
+        self.alignment(vehicles_list)
 
         # Update velocity
         self.velocity += self.acceleration
@@ -137,7 +139,7 @@ class Vehicle:
         self.position.y = self.position.y % altura
 
     def applyForce(self, force):
-        self.acceleration += force
+        self.acceleration += self.limit(self.maxforce, force)
     
     def seek(self, target):
         # Calculate desired
